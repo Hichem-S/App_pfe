@@ -3,7 +3,7 @@ import 'package:plant_disease_recognition/Medicaments.dart';
 import 'package:plant_disease_recognition/AboutUs.dart';
 import 'package:plant_disease_recognition/PlantDisseaseRecognition.dart';
 import 'package:plant_disease_recognition/main.dart'; // Import camera package
-
+import 'package:plant_disease_recognition/AboutTheSerre.dart';
 class AccueilPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -40,7 +40,10 @@ class AccueilPage extends StatelessWidget {
             ListTile(
               title: Text('About The Serre'),
               onTap: () {
-                // Update UI based on Drawer item tap
+             Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AboutTheSerre()), // Pass cameras to HomePage
+                );
               },
             ),
             ListTile(
@@ -48,7 +51,7 @@ class AccueilPage extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => PlantDiseaseRecognitionScreen()),
+                  MaterialPageRoute(builder: (context) => Test1()),
                 );
               },
             ),

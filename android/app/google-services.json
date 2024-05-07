@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "937336425153",
+    "project_id": "appbackend-23cd6",
+    "storage_bucket": "appbackend-23cd6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:937336425153:android:d13076db39ff6c5b16a240",
+        "android_client_info": {
+          "package_name": "com.example.plant_disease_recognition"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBlbHbACPb1lUutnS7ZSMSctgtwKqv_RNg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
