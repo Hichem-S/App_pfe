@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Firebase configuration -->
+   <!-- <string name="google_api_key">AIzaSyBlbHbACPb1lUutnS7ZSMSctgtwKqv_RNg</string>
+    <string name="google_app_id">1:937336425153:android:d13076db39ff6c5b16a240</string>
+    <string name="google_crash_reporting_api_key">AIzaSyBlbHbACPb1lUutnS7ZSMSctgtwKqv_RNg</string>
+    <string name="google_storage_bucket">appbackend-23cd6.appspot.com</string>-->
+
     <!-- Theme applied to the Android Window while the process is starting when the OS's Dark Mode setting is off -->
     <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
         <!-- Show a splash screen on the activity. Automatically removed when

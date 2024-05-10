@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:plant_disease_recognition/HomePage.dart';
 import 'package:plant_disease_recognition/Medicaments.dart';
 import 'package:plant_disease_recognition/AboutUs.dart';
-import 'package:plant_disease_recognition/PlantDisseaseRecognition.dart';
-import 'package:plant_disease_recognition/main.dart'; // Import camera package
 import 'package:plant_disease_recognition/AboutTheSerre.dart';
+
 class AccueilPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -40,9 +41,9 @@ class AccueilPage extends StatelessWidget {
             ListTile(
               title: Text('About The Serre'),
               onTap: () {
-             Navigator.push(
+                Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => AboutTheSerre()), // Pass cameras to HomePage
+                  MaterialPageRoute(builder: (context) => AboutTheSerre()),
                 );
               },
             ),
@@ -51,7 +52,7 @@ class AccueilPage extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => Test1()),
+                  MaterialPageRoute(builder: (context) => HomePage()), // Correctly reference the target page
                 );
               },
             ),
@@ -75,12 +76,9 @@ class AccueilPage extends StatelessWidget {
             ),
             ListTile(
               title: Text('Sign Out'),
-              onTap: () {
-                // Navigate to main.dart when Sign Out is tapped
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => HomePage()), // Pass cameras to HomePage
-                );
+              onTap: () async {
+                await FirebaseAuth.instance.signOut();
+                Navigator.of(context).pushNamedAndRemoveUntil("/HomePage", (route) => false); // Ensure this route is defined in your MaterialApp
               },
             ),
           ],
@@ -115,7 +113,6 @@ class AccueilPage extends StatelessWidget {
                 "Welcome to the Plant Disease Recognition System!",
                 style: TextStyle(color: Colors.white, fontSize: 18),
               ),
-              // Additional Text
               SizedBox(height: 20),
               Text(
                 "Our mission is to help in identifying plant disease efficiently. Upload an image of a tomato plant, and our system will analyze it to detect any signs of diseases. Together, let's protect our crops and ensure a healthier harvest!",
