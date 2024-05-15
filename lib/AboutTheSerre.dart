@@ -10,7 +10,7 @@ void main() => runApp(
 
 class AboutTheSerre extends StatelessWidget {
   // URL of the Raspberry Pi camera stream
-  final String cameraUrl = 'http://192.168.119.162:5000';
+  final String cameraUrl = 'http://192.168.240.162:5000';
 
   // Function to launch URL
   Future<void> _launchURL() async {

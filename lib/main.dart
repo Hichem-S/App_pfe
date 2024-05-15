@@ -2,11 +2,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:plant_disease_recognition/AboutUs.dart';
-import 'HomePage.dart';
+import 'package:plant_disease_recognition/PlantDisseaseRecognition.dart';
+import 'Login.dart';
 import 'AccueilPage.dart';
 import 'WebViewContainer.dart';
 import 'inscription_page.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,38 +14,49 @@ void main() async {
   runApp(MyApp());
 }
 
-
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
-
+class MyApp extends StatelessWidget {
   @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  @override
-    void initState() {
-      FirebaseAuth.instance.authStateChanges().listen((User ? User)
-      {
-        if (User == null)
-        {
-        print(" ================ User is currently signed out !");}
-        else{
-        print(" ================ User is signed in !");}
-      });
-      super.initState();
-    }
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: FirebaseAuth.instance.currentUser == null ?  HomePage(): AccueilPage(),
+      home: _MyAppState(),
       routes: {
         '/webViewContainer': (context) => const WebViewContainer(),
-        '/accueilPage': (context) => AccueilPage(),
+        '/AccueilPage': (context) => AccueilPage(),
         '/inscriptionPage': (context) => InscriptionPage(),
-        '/HomePage': (context) => HomePage(),
-        '/aboutUs': (context) => AboutUs(), 
+        '/Login': (context) => Login(),
+        '/aboutUs': (context) => AboutUs(),
+        '/PlantDiseaseRecognition': (context) => PlantDiseaseRecognition(),
       },
     );
+  }
+}
+
+class _MyAppState extends StatefulWidget {
+  const _MyAppState({Key? key}) : super(key: key);
+
+  @override
+  State<_MyAppState> createState() => _MyAppStateState();
+}
+
+class _MyAppStateState extends State<_MyAppState> {
+  @override
+  void initState() {
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      if (user == null) {
+        print(" ================ User is currently signed out !");
+      } else {
+        print(" ================ User is signed in !");
+      }
+    });
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return (FirebaseAuth.instance.currentUser != null &&
+            FirebaseAuth.instance.currentUser!.emailVerified)
+        ? AccueilPage()
+        : Login();
   }
 }

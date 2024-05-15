@@ -88,7 +88,9 @@ class _InscriptionPageState extends State<InscriptionPage> {
                                   final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
                                     email: emailController.text.trim(),
                                     password: passwordController.text.trim(),
+                                    
                                   );
+                                  FirebaseAuth.instance.currentUser!.sendEmailVerification();
                                   AwesomeDialog(
                                     context: context,
                                     dialogType: DialogType.success,
@@ -96,7 +98,7 @@ class _InscriptionPageState extends State<InscriptionPage> {
                                     title: 'Succès',
                                     desc: 'Inscription réussie. Bienvenue!',
                                     btnOkOnPress: () {
-                                      Navigator.of(context).pushReplacementNamed('/accueilPage'); // Ensure this matches your route names
+                                      Navigator.of(context).pushReplacementNamed('/Login'); // Ensure this matches your route names
                                     },
                                   )..show();
                                 } on FirebaseAuthException catch (e) {

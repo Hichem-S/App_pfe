@@ -4,23 +4,24 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
 import 'dart:io';
 
-class Test1 extends StatefulWidget {
+class PlantDiseaseRecognition extends StatefulWidget {
   @override
-  State<Test1> createState() => _TestState();
+  State<PlantDiseaseRecognition> createState() => _PlantDiseaseRecognitionState();
 }
 
-class _TestState extends State<Test1> {
+class _PlantDiseaseRecognitionState extends State<PlantDiseaseRecognition> {
   String? body = "";
 
   File? _file;
 
   Future getpost() async {
-    var url = Uri.http('http://127.0.0.1:5000', "/admin/user");
-    print(url);
-    var response = await http.get(Uri.parse("http://10.0.2.2:5000/result"));
-    print(response);
+    var url = Uri.parse('http://192.168.240.150:5000/admin/user');
+    print('Sending GET request to: $url');
+    var response = await http.get(url);
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
 
-    var response_body = await response.body;
+    var response_body = response.body;
     print(response_body);
   }
 
@@ -40,10 +41,13 @@ class _TestState extends State<Test1> {
       'Content-type': 'application/json',
       'Accept': 'application/json',
     };
-    var response = await http.put(Uri.parse("http://10.0.2.2:5000/api"),
-        body: base64, headers: requestHeaders);
 
-    print(response.body);
+    var url = Uri.parse("http://192.168.240.150:5000/api");
+    print('Sending PUT request to: $url');
+    var response = await http.put(url, body: base64, headers: requestHeaders);
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
+
     setState(() {
       body = response.body;
     });
