@@ -7,6 +7,7 @@ import 'package:plant_disease_recognition/Medicaments.dart';
 import 'package:plant_disease_recognition/AboutUs.dart';
 import 'package:plant_disease_recognition/AboutTheSerre.dart';
 import 'package:plant_disease_recognition/PlantDisseaseRecognition.dart';
+import 'package:plant_disease_recognition/settings.dart';
 
 class AccueilPage extends StatelessWidget {
   @override
@@ -60,7 +61,7 @@ class AccueilPage extends StatelessWidget {
               },
             ),
             ListTile(
-              title: Text('Medicaments'),
+              title: Text('Treatments'),
               onTap: () {
                 Navigator.push(
                   context,
@@ -75,6 +76,16 @@ class AccueilPage extends StatelessWidget {
                   context,
                   MaterialPageRoute(builder: (context) => AboutUs()),
                 );
+              },
+            ),
+                        ListTile(
+              title: Text('Settings'),
+              onTap: () {
+                Navigator.push(
+  context,
+  MaterialPageRoute(builder: (context) => Settings()),
+);
+
               },
             ),
             ListTile(

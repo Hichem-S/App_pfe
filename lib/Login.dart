@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:plant_disease_recognition/AccueilPage.dart';
 import 'package:plant_disease_recognition/inscription_page.dart';
@@ -24,9 +25,9 @@ class _HomePageState extends State<Login> {
       );
 
       if (loginResult.status == LoginStatus.success) {
-        final OAuthCredential facebookAuthCredential =
-            FacebookAuthProvider.credential(loginResult.accessToken!.token);
-        await FirebaseAuth.instance.signInWithCredential(facebookAuthCredential);
+        final OAuthCredential facebookAuthCredential = FacebookAuthProvider.credential(loginResult.accessToken!.token);
+        final UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(facebookAuthCredential);
+        await updateUserInFirestore(userCredential.user);
         Navigator.of(context).pushReplacementNamed("/AccueilPage");
         showInfoDialog('Successfully logged in with Facebook!');
       } else {
@@ -40,7 +41,6 @@ class _HomePageState extends State<Login> {
   Future<void> signInWithGoogle() async {
     try {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-
       if (googleUser == null) return;
 
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
@@ -48,36 +48,38 @@ class _HomePageState extends State<Login> {
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
-      await FirebaseAuth.instance.signInWithCredential(credential);
+      final UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+      await updateUserInFirestore(userCredential.user);
       Navigator.of(context).pushReplacementNamed("/AccueilPage");
     } catch (e) {
       showErrorDialog('Failed to login with Google: $e');
     }
   }
 
- Future<void> resetPassword() async {
-  if (emailController.text.isEmpty) {
-    showErrorDialog('Please enter your email address to reset your password.');
-    return;
-  }
-  try {
-    await _auth.sendPasswordResetEmail(email: emailController.text.trim());
-    showInfoDialog('A password reset link has been sent to your email.');
-  } catch (e) {
-    if (e is FirebaseAuthException) {
-      if (e.code == 'user-not-found') {
+  Future<void> resetPassword() async {
+    if (emailController.text.isEmpty) {
+      showErrorDialog('Please enter your email address to reset your password.');
+      return;
+    }
+    try {
+      await _auth.sendPasswordResetEmail(email: emailController.text.trim());
+      showInfoDialog('A password reset link has been sent to your email.');
+    } catch (e) {
+      if (e is FirebaseAuthException && e.code == 'user-not-found') {
         showErrorDialog('No user found for that email address.');
       } else {
-        // Handle other FirebaseAuth issues
-        showErrorDialog('Failed to send reset email: ${e.message}');
+        showErrorDialog('Failed to send reset email: ${e.toString()}');
       }
-    } else {
-      // Handle any other errors that might occur
-      showErrorDialog('An error occurred while attempting to reset password: $e');
     }
   }
-}
 
+  Future<void> updateUserInFirestore(User? user) async {
+    if (user != null) {
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+        'lastLogin': DateTime.now(),
+      }, SetOptions(merge: true));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -143,6 +145,7 @@ class _HomePageState extends State<Login> {
                                         email: emailController.text.trim(),
                                         password: passwordController.text.trim(),
                                       );
+                                      await updateUserInFirestore(credential.user);
                                       if (credential.user != null && credential.user!.emailVerified) {
                                         Navigator.of(context).pushReplacementNamed("/AccueilPage");
                                       } else {

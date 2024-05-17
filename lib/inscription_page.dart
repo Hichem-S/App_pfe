@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class InscriptionPage extends StatefulWidget {
   @override
@@ -73,66 +74,15 @@ class _InscriptionPageState extends State<InscriptionPage> {
                     child: Column(
                       children: <Widget>[
                         SizedBox(height: screenHeight * 0.1),
-                        buildTextField(nomController, "Nom", "Nom", Icons.person),
-                        buildTextField(prenomController, "Prénom", "Prénom", Icons.person_outline),
+                        buildTextField(nomController, "Family Name", "Family Name", Icons.person),
+                        buildTextField(prenomController, "Name", "Name", Icons.person_outline),
                         buildTextField(emailController, "Email", "Email", Icons.email),
                         buildTextField(phoneNumberController, "Phone number", "Phone number", Icons.phone),
-                        buildTextField(passwordController, "Mot de passe", "Mot de passe", Icons.lock_outline, isPassword: true),
-                        buildTextField(confirmPasswordController, "Confirmer Mot de passe", "Confirmer Mot de passe", Icons.lock, isPassword: true),
+                        buildTextField(passwordController, "Password", "Password", Icons.lock_outline, isPassword: true),
+                        buildTextField(confirmPasswordController, "Confirm Password", "Confirm Password", Icons.lock, isPassword: true),
                         SizedBox(height: screenHeight * 0.05),
                         MaterialButton(
-                          onPressed: () async {
-                            if (_formKey.currentState?.validate() ?? false) {
-                              if (passwordController.text == confirmPasswordController.text) {
-                                try {
-                                  final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-                                    email: emailController.text.trim(),
-                                    password: passwordController.text.trim(),
-                                    
-                                  );
-                                  FirebaseAuth.instance.currentUser!.sendEmailVerification();
-                                  AwesomeDialog(
-                                    context: context,
-                                    dialogType: DialogType.success,
-                                    animType: AnimType.leftSlide,
-                                    title: 'Succès',
-                                    desc: 'Inscription réussie. Bienvenue!',
-                                    btnOkOnPress: () {
-                                      Navigator.of(context).pushReplacementNamed('/Login'); // Ensure this matches your route names
-                                    },
-                                  )..show();
-                                } on FirebaseAuthException catch (e) {
-                                  if (e.code == 'weak-password') {
-                                    AwesomeDialog(
-                                      context: context,
-                                      dialogType: DialogType.error,
-                                      animType: AnimType.rightSlide,
-                                      title: 'Erreur',
-                                      desc: 'Le mot de passe fourni est trop faible.',
-                                    )..show();
-                                  } else if (e.code == 'email-already-in-use') {
-                                    AwesomeDialog(
-                                      context: context,
-                                      dialogType: DialogType.error,
-                                      animType: AnimType.rightSlide,
-                                      title: 'Erreur',
-                                      desc: 'Le compte existe déjà pour cet e-mail.',
-                                    )..show();
-                                  }
-                                } catch (e) {
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Une erreur inconnue s\'est produite : $e')));
-                                }
-                              } else {
-                                AwesomeDialog(
-                                  context: context,
-                                  dialogType: DialogType.error,
-                                  animType: AnimType.rightSlide,
-                                  title: 'Erreur',
-                                  desc: 'Les mots de passe ne correspondent pas.',
-                                )..show();
-                              }
-                            }
-                          },
+                          onPressed: _registerUser,
                           height: 50,
                           color: Colors.green[900],
                           shape: RoundedRectangleBorder(
@@ -159,6 +109,61 @@ class _InscriptionPageState extends State<InscriptionPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _registerUser() async {
+    if (_formKey.currentState!.validate()) {
+      if (passwordController.text == confirmPasswordController.text) {
+        try {
+          UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+            email: emailController.text.trim(),
+            password: passwordController.text.trim(),
+          );
+
+          // Update Firestore upon successful registration
+          FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
+            'nom': nomController.text,
+            'prenom': prenomController.text,
+            'email': emailController.text,
+            'phoneNumber': phoneNumberController.text,
+            'creationTime': DateTime.now(),
+          });
+
+          // Verification email
+          userCredential.user!.sendEmailVerification();
+
+          // Success dialog
+          AwesomeDialog(
+            context: context,
+            dialogType: DialogType.success,
+            animType: AnimType.leftSlide,
+            title: 'Succès',
+            desc: 'Inscription réussie. Vérifiez votre email!',
+            btnOkOnPress: () {
+              Navigator.of(context).pushReplacementNamed('/Login');
+            },
+          )..show();
+        } on FirebaseAuthException catch (e) {
+          AwesomeDialog(
+            context: context,
+            dialogType: DialogType.error,
+            animType: AnimType.rightSlide,
+            title: 'Erreur',
+            desc: e.message ?? 'Une erreur est survenue',
+            btnOkOnPress: () {},
+          )..show();
+        }
+      } else {
+        AwesomeDialog(
+          context: context,
+          dialogType: DialogType.error,
+          animType: AnimType.rightSlide,
+          title: 'Erreur',
+          desc: 'Les mots de passe ne correspondent pas.',
+          btnOkOnPress: () {},
+        )..show();
+      }
+    }
   }
 
   Widget buildTextField(TextEditingController controller, String label, String placeholder, IconData icon, {bool isPassword = false}) {
