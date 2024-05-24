@@ -23,6 +23,8 @@ dependencies:
   awesome_dialog: ^3.2.1
   firebase_app_check: ^0.2.2+5
   flutter_facebook_auth: ^3.5.0
+  crypto: ^3.0.3
+  firebase_analytics: ^10.10.6
   
 
 dev_dependencies:

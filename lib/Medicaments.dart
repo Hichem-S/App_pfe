@@ -36,7 +36,7 @@ class Medicaments extends StatelessWidget {
               SizedBox(height: MediaQuery.of(context).size.height * 0.1),
               Center(
                 child: Text(
-                  "Medicaments",
+                  "Treatments",
                   style: TextStyle(color: Colors.white, fontSize: 40),
                 ),
               ),

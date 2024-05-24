@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 
 class InscriptionPage extends StatefulWidget {
   @override
@@ -10,13 +12,117 @@ class InscriptionPage extends StatefulWidget {
 
 class _InscriptionPageState extends State<InscriptionPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
   final TextEditingController nomController = TextEditingController();
   final TextEditingController prenomController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController phoneNumberController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
+
+  String hashPassword(String password) {
+    var bytes = utf8.encode(password);
+    var digest = sha256.convert(bytes);
+    return digest.toString();
+  }
+
+  Future<void> _registerUser() async {
+    if (_formKey.currentState!.validate()) {
+      if (passwordController.text == confirmPasswordController.text) {
+        String hashedPassword = hashPassword(passwordController.text.trim()); // Hash the password for storage
+        try {
+          UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+            email: emailController.text.trim(),
+            password: passwordController.text.trim(), // Send the plain password to Firebase Auth
+          );
+
+          FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
+            'Family Name': nomController.text,
+            'Name': prenomController.text,
+            'Email': emailController.text,
+            'PhoneNumber': phoneNumberController.text,
+            'Password': hashedPassword, // Storing hashed password as additional data
+            'creationTime': DateTime.now(),
+          });
+
+          userCredential.user!.sendEmailVerification();
+
+          AwesomeDialog(
+            context: context,
+            dialogType: DialogType.success,
+            animType: AnimType.leftSlide,
+            title: 'Success',
+            desc: 'Successful registration. Check your email!',
+            btnOkOnPress: () {
+              Navigator.of(context).pushReplacementNamed('/Login');
+            },
+          )..show();
+        } on FirebaseAuthException catch (e) {
+          AwesomeDialog(
+            context: context,
+            dialogType: DialogType.error,
+            animType: AnimType.rightSlide,
+            title: 'Error',
+            desc: e.message ?? 'An error has occurred',
+            btnOkOnPress: () {},
+          )..show();
+        }
+      } else {
+        AwesomeDialog(
+          context: context,
+          dialogType: DialogType.error,
+          animType: AnimType.rightSlide,
+          title: 'Error',
+          desc: 'Passwords do not match.',
+          btnOkOnPress: () {},
+        )..show();
+      }
+    }
+  }
+
+  Widget buildTextField(TextEditingController controller, String label, String placeholder, IconData icon, {bool isPassword = false}) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: Color.fromRGBO(114, 215, 139, 0.298),
+            blurRadius: 20,
+            offset: Offset(0, 10),
+          ),
+        ],
+      ),
+      child: TextFormField(
+        controller: controller,
+        obscureText: isPassword,
+        validator: (value) {
+          if (value?.isEmpty ?? true) {
+            return 'This field can not be empty';
+          }
+          if (controller == phoneNumberController && (value?.length ?? 0) != 8) {
+            AwesomeDialog(
+              context: context,
+              dialogType: DialogType.error,
+              animType: AnimType.rightSlide,
+              title: 'Error',
+              desc: 'The phone number must be exactly 8 digits long',
+              btnOkOnPress: () {},
+            )..show();
+            return '';
+          }
+          return null;
+        },
+        decoration: InputDecoration(
+          icon: Icon(icon, color: Colors.grey),
+          hintText: placeholder,
+          hintStyle: TextStyle(color: Colors.grey),
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.all(10),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,13 +190,13 @@ class _InscriptionPageState extends State<InscriptionPage> {
                         MaterialButton(
                           onPressed: _registerUser,
                           height: 50,
-                          color: Colors.green[900],
+                          color: Colors.green.shade900,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(50),
                           ),
                           child: Center(
                             child: Text(
-                              "Connect",
+                              "Sign Up",
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -106,95 +212,6 @@ class _InscriptionPageState extends State<InscriptionPage> {
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _registerUser() async {
-    if (_formKey.currentState!.validate()) {
-      if (passwordController.text == confirmPasswordController.text) {
-        try {
-          UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-            email: emailController.text.trim(),
-            password: passwordController.text.trim(),
-          );
-
-          // Update Firestore upon successful registration
-          FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
-            'nom': nomController.text,
-            'prenom': prenomController.text,
-            'email': emailController.text,
-            'phoneNumber': phoneNumberController.text,
-            'creationTime': DateTime.now(),
-          });
-
-          // Verification email
-          userCredential.user!.sendEmailVerification();
-
-          // Success dialog
-          AwesomeDialog(
-            context: context,
-            dialogType: DialogType.success,
-            animType: AnimType.leftSlide,
-            title: 'Succès',
-            desc: 'Inscription réussie. Vérifiez votre email!',
-            btnOkOnPress: () {
-              Navigator.of(context).pushReplacementNamed('/Login');
-            },
-          )..show();
-        } on FirebaseAuthException catch (e) {
-          AwesomeDialog(
-            context: context,
-            dialogType: DialogType.error,
-            animType: AnimType.rightSlide,
-            title: 'Erreur',
-            desc: e.message ?? 'Une erreur est survenue',
-            btnOkOnPress: () {},
-          )..show();
-        }
-      } else {
-        AwesomeDialog(
-          context: context,
-          dialogType: DialogType.error,
-          animType: AnimType.rightSlide,
-          title: 'Erreur',
-          desc: 'Les mots de passe ne correspondent pas.',
-          btnOkOnPress: () {},
-        )..show();
-      }
-    }
-  }
-
-  Widget buildTextField(TextEditingController controller, String label, String placeholder, IconData icon, {bool isPassword = false}) {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Color.fromRGBO(114, 215, 139, 0.298),
-            blurRadius: 20,
-            offset: Offset(0, 10),
-          ),
-        ],
-      ),
-      child: TextFormField(
-        controller: controller,
-        obscureText: isPassword,
-        validator: (value) {
-          if (value?.isEmpty ?? true) {
-            return 'Ce champ ne peut pas être vide';
-          }
-          return null;
-        },
-        decoration: InputDecoration(
-          icon: Icon(icon, color: Colors.grey),
-          hintText: placeholder,
-          hintStyle: TextStyle(color: Colors.grey),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.all(10),
         ),
       ),
     );

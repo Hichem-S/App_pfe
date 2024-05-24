@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:plant_disease_recognition/AboutUs.dart';
 import 'package:plant_disease_recognition/PlantDisseaseRecognition.dart';
 import 'Login.dart';
@@ -13,6 +14,18 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   runApp(MyApp());
+  _fetchToken();  // Add this line to fetch and print the token at startup.
+}
+
+// Function to fetch and print FCM token
+void _fetchToken() async {
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+  String? token = await messaging.getToken();
+  if (token != null) {
+    print("Firebase Messaging Token: $token");
+  } else {
+    print("Failed to fetch token");
+  }
 }
 
 class MyApp extends StatelessWidget {

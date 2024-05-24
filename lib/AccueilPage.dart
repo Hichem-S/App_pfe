@@ -10,6 +10,9 @@ import 'package:plant_disease_recognition/PlantDisseaseRecognition.dart';
 import 'package:plant_disease_recognition/settings.dart';
 
 class AccueilPage extends StatelessWidget {
+  // Function to get the current user
+  User? get currentUser => FirebaseAuth.instance.currentUser;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,12 +27,42 @@ class AccueilPage extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.green,
               ),
-              child: Text(
-                'Menu',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    'User',  // Label for the user section
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    currentUser?.displayName ?? 'No name available',  // Display user's display name
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                  ),
+                  Text(
+                    currentUser?.email ?? 'No user logged in',  // Display user's email
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Menu',  // Menu label
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
             ),
             ListTile(
@@ -56,7 +89,7 @@ class AccueilPage extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => PlantDiseaseRecognition()), // Correctly reference the target page
+                  MaterialPageRoute(builder: (context) => PlantDiseaseRecognition()),
                 );
               },
             ),
@@ -78,14 +111,13 @@ class AccueilPage extends StatelessWidget {
                 );
               },
             ),
-                        ListTile(
+            ListTile(
               title: Text('Settings'),
               onTap: () {
                 Navigator.push(
-  context,
-  MaterialPageRoute(builder: (context) => Settings()),
-);
-
+                  context,
+                  MaterialPageRoute(builder: (context) => Settings()),
+                );
               },
             ),
             ListTile(
@@ -158,15 +190,15 @@ class AccueilPage extends StatelessWidget {
         ),
         SizedBox(height: 10),
         Text(
-          "1. Upload Image : Go to the Disease Recognition page and upload an image of a plant with suspected diseases.",
+          "1. Upload Image: Go to the Disease Recognition page and upload an image of a plant with suspected diseases.",
           style: TextStyle(color: Colors.white, fontSize: 16),
         ),
         Text(
-          "2. Analysis : Our system will process the image using advanced algorithms to identify potential diseases.",
+          "2. Analysis: Our system will process the image using advanced algorithms to identify potential diseases.",
           style: TextStyle(color: Colors.white, fontSize: 16),
         ),
         Text(
-          "3. Results : View the results and recommendations for further action.",
+          "3. Results: View the results and recommendations for further action.",
           style: TextStyle(color: Colors.white, fontSize: 16),
         ),
       ],
@@ -183,15 +215,15 @@ class AccueilPage extends StatelessWidget {
         ),
         SizedBox(height: 10),
         Text(
-          "- Accuracy : Our system utilizes state-of-the-art machine learning techniques for accurate disease detection.",
+          "- Accuracy: Our system utilizes state-of-the-art machine learning techniques for accurate disease detection.",
           style: TextStyle(color: Colors.white, fontSize: 16),
         ),
         Text(
-          "- User-Friendly : Simple and intuitive interface for seamless user experience.",
+          "- User-Friendly: Simple and intuitive interface for seamless user experience.",
           style: TextStyle(color: Colors.white, fontSize: 16),
         ),
         Text(
-          "- Fast and Efficient : Receive results in seconds, allowing for quick decision-making.",
+          "- Fast and Efficient: Receive results in seconds, allowing for quick decision-making.",
           style: TextStyle(color: Colors.white, fontSize: 16),
         ),
       ],
