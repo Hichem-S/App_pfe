@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:plant_disease_recognition/AboutUs.dart';
 import 'package:plant_disease_recognition/PlantDisseaseRecognition.dart';
+import 'package:plant_disease_recognition/notification_handler.dart';
 import 'Login.dart';
 import 'AccueilPage.dart';
 import 'WebViewContainer.dart';
@@ -14,18 +15,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   runApp(MyApp());
-  _fetchToken();  // Add this line to fetch and print the token at startup.
-}
-
-// Function to fetch and print FCM token
-void _fetchToken() async {
-  FirebaseMessaging messaging = FirebaseMessaging.instance;
-  String? token = await messaging.getToken();
-  if (token != null) {
-    print("Firebase Messaging Token: $token");
-  } else {
-    print("Failed to fetch token");
-  }
 }
 
 class MyApp extends StatelessWidget {
@@ -57,9 +46,13 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  late NotificationHandler notificationHandler;
+
   @override
   void initState() {
     super.initState();
+    notificationHandler = NotificationHandler();
+    notificationHandler.initFirebaseMessaging();
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
       if (user == null) {
         print("User is currently signed out!");
