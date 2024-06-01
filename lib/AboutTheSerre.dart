@@ -26,6 +26,15 @@ class AboutTheSerre extends StatelessWidget {
     }
   }
 
+  Future<void> sendCommand(String command) async {
+    final Uri url = Uri.parse('http://your-server-url/command/$command');
+    if (!await canLaunchUrl(url)) {
+      throw 'Could not launch $url';
+    } else {
+      await launchUrl(url);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,91 +51,119 @@ class AboutTheSerre extends StatelessWidget {
             ],
           ),
         ),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight,
-                ),
-                child: IntrinsicHeight(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      SizedBox(height: constraints.maxHeight * 0.1),
-                      Padding(
-                        padding: EdgeInsets.all(20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text(
-                              "Welcome to the Serre Informations",
-                              style: TextStyle(color: Colors.white, fontSize: 40),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              "Click the button below to view the camera stream.",
-                              style: TextStyle(color: Colors.white, fontSize: 18),
-                            ),
-                            SizedBox(height: 20),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green[800],
-                                foregroundColor: Colors.white,
-                                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                                textStyle: TextStyle(fontSize: 20),
-                              ),
-                              onPressed: _launchURL,
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: <Widget>[
-                                  Icon(Icons.camera_alt),
-                                  SizedBox(width: 8),
-                                  Text('Open Camera Stream'),
-                                ],
-                              ),
-                            ),
-                            SizedBox(height: 40),
-                            StreamBuilder<DocumentSnapshot>(
-                              stream: FirebaseFirestore.instance
-                                  .collection('sensorData')
-                                  .doc('pSDyoymbI5lQRfRtpA73')
-                                  .snapshots(),
-                              builder: (context, snapshot) {
-                                if (snapshot.hasError) {
-                                  return Text("Error: ${snapshot.error}", style: TextStyle(color: Colors.white));
-                                } else if (snapshot.connectionState == ConnectionState.waiting) {
-                                  return CircularProgressIndicator();
-                                } else if (snapshot.hasData && snapshot.data!.exists) {
-                                  var document = snapshot.data!.data() as Map<String, dynamic>;
-                                  return Column(
-                                    children: <Widget>[
-                                      Text(
-                                        "Humidity: ${document['humidity']}%",
-                                        style: TextStyle(color: Colors.white, fontSize: 18),
-                                      ),
-                                      SizedBox(height: 10),
-                                      Text(
-                                        "Temperature: ${document['temperature']}°C",
-                                        style: TextStyle(color: Colors.white, fontSize: 18),
-                                      ),
-                                    ],
-                                  );
-                                } else {
-                                  return Text("No data available", style: TextStyle(color: Colors.white));
-                                }
-                              },
-                            ),
-                          ],
+        child: SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: MediaQuery.of(context).size.height,
+            ),
+            child: IntrinsicHeight(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        SizedBox(height: 50),
+                        Text(
+                          "Welcome to the Serre Informations",
+                          style: TextStyle(color: Colors.white, fontSize: 40),
                         ),
-                      ),
-                      Spacer(),
-                    ],
+                        SizedBox(height: 10),
+                        Text(
+                          "Click the button below to view the camera stream.",
+                          style: TextStyle(color: Colors.white, fontSize: 18),
+                        ),
+                        SizedBox(height: 20),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green[800],
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                            textStyle: TextStyle(fontSize: 20),
+                          ),
+                          onPressed: _launchURL,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Icon(Icons.camera_alt),
+                              SizedBox(width: 8),
+                              Text('Open Camera Stream'),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        Center(
+                          child: StreamBuilder<DocumentSnapshot>(
+                            stream: FirebaseFirestore.instance
+                                .collection('sensorData')
+                                .doc('pSDyoymbI5lQRfRtpA73')
+                                .snapshots(),
+                            builder: (context, snapshot) {
+                              if (snapshot.hasError) {
+                                return Text("Error: ${snapshot.error}", style: TextStyle(color: Colors.white));
+                              } else if (snapshot.connectionState == ConnectionState.waiting) {
+                                return CircularProgressIndicator();
+                              } else if (snapshot.hasData && snapshot.data!.exists) {
+                                var document = snapshot.data!.data() as Map<String, dynamic>;
+                                return DataTable(
+                                  columns: const <DataColumn>[
+                                    DataColumn(label: Text('Sensor', style: TextStyle(color: Colors.white, fontSize: 18))),
+                                    DataColumn(label: Text('Value', style: TextStyle(color: Colors.white, fontSize: 18))),
+                                  ],
+                                  rows: <DataRow>[
+                                    DataRow(cells: <DataCell>[
+                                      DataCell(Text('Humidity', style: TextStyle(color: Colors.white))),
+                                      DataCell(Text('${document['humidity']}%', style: TextStyle(color: Colors.white))),
+                                    ]),
+                                    DataRow(cells: <DataCell>[
+                                      DataCell(Text('Temperature', style: TextStyle(color: Colors.white))),
+                                      DataCell(Text('${document['temperature']}°C', style: TextStyle(color: Colors.white))),
+                                    ]),
+                                  ],
+                                );
+                              } else {
+                                return Text("No data available", style: TextStyle(color: Colors.white));
+                              }
+                            },
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        Center(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue[800],
+                              foregroundColor: Colors.white,
+                              padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                              textStyle: TextStyle(fontSize: 20),
+                            ),
+                            onPressed: () => sendCommand("open_watering"),
+                            child: Text('Start Watering'),
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        Center(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red[800],
+                              foregroundColor: Colors.white,
+                              padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                              textStyle: TextStyle(fontSize: 20),
+                            ),
+                            onPressed: () => sendCommand("stop_watering"),
+                            child: Text('Stop Watering'),
+                          ),
+                        ),
+                        SizedBox(height: 40),
+                      ],
+                    ),
                   ),
-                ),
+                ],
               ),
-            );
-          },
+            ),
+          ),
         ),
       ),
     );
